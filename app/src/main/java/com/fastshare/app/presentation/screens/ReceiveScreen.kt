@@ -29,6 +29,7 @@ import com.fastshare.app.presentation.viewmodel.TransferViewModel
 fun ReceiveScreen(onClose: () -> Unit) {
     val vm: TransferViewModel = hiltViewModel()
     val state by vm.uiState.collectAsStateWithLifecycle()
+    val incoming by vm.incomingRequests.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -48,14 +49,14 @@ fun ReceiveScreen(onClose: () -> Unit) {
                     Icons.Outlined.Download,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(48.dp),
                 )
                 Spacer(Modifier.height(12.dp))
-                Text("Waiting for incoming transfers…", style = MaterialTheme.typography.bodyLarge)
-                if (state.incomingRequests.isNotEmpty()) {
-                    // The system dialog handles approval; this screen reflects status.
-                    state.incomingRequests.forEach { req ->
+                Text("Waiting for incoming transfers", style = MaterialTheme.typography.bodyLarge)
+                if (incoming.isNotEmpty()) {
+                    incoming.forEach { req ->
                         Text(
-                            "Request from ${req.peer.deviceName}: ${req.items.size} files",
+                            "Request from ${'$'}{req.peer.deviceName}: ${'$'}{req.items.size} files",
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(top = 8.dp),
                         )

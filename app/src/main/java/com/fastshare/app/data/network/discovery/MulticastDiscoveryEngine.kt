@@ -69,6 +69,7 @@ class MulticastDiscoveryEngine @Inject constructor(
         DatagramSocket().use { socket ->
             socket.reuseAddress = true
             socket.networkInterface = iface
+            socket.broadcast = true
             val payload = Protocol.json.encodeToString(
                 DiscoveryPacket.serializer(),
                 packet.copy(

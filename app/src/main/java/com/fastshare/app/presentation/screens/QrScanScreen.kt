@@ -2,6 +2,7 @@ package com.fastshare.app.presentation.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Icon
@@ -23,8 +24,6 @@ fun QrScanScreen(onClose: () -> Unit) {
             )
         },
     ) { padding ->
-        // CameraX preview + barhance analyzer (QR_SCAN) .
-        // On a successful scan, decode QrPayload.decode(raw) and pass to the device repository.
         Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
             Text("Camera scanner placeholder")
         }

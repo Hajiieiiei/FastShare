@@ -69,7 +69,7 @@ class DiscoveryCoordinator @Inject constructor(
                     deviceName = deviceName,
                     platform = DevicePlatform.ANDROID,
                     deviceType = DeviceType.PHONE,
-                    appVersion = BuildConfig.VERSION_NAME,
+                    appVersion = com.fastshare.app.BuildConfig.VERSION_NAME,
                     port = port,
                     fingerprint = fingerprint,
                     capabilities = Capability.DEFAULTS.map { it.wire },
