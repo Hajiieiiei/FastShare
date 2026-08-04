@@ -99,7 +99,25 @@ class SettingsRepository @Inject constructor(
         private val KEY_CLIPBOARD_AUTO = booleanPreferencesKey("clipboard_auto")
         private val KEY_ONBOARDED = booleanPreferencesKey("onboarded")
 
-        fun <T : Enum<T>> enumFromString(value: String?, default: T, matcher: (T) -> String = { it.name }): T =
-            value?.let { v -> T::class.java.enumConstants?.firstOrNull { matcher(it) == v } } ?: default
+        fun enumFromString(value: String?, default: NetworkInterfacePreference): NetworkInterfacePreference {
+            if (value == null) return default
+            return NetworkInterfacePreference.entries.firstOrNull { it.name == value } ?: default
+        }
+        fun enumFromString(value: String?, default: ApprovalPolicy): ApprovalPolicy {
+            if (value == null) return default
+            return ApprovalPolicy.entries.firstOrNull { it.name == value } ?: default
+        }
+        fun enumFromString(value: String?, default: ThemeMode): ThemeMode {
+            if (value == null) return default
+            return ThemeMode.entries.firstOrNull { it.name == value } ?: default
+        }
+        fun enumFromString(value: String?, default: AppLanguage): AppLanguage {
+            if (value == null) return default
+            return AppLanguage.entries.firstOrNull { it.tag == value } ?: default
+        }
+        fun enumFromString(value: String?, default: AutoCleanupPolicy): AutoCleanupPolicy {
+            if (value == null) return default
+            return AutoCleanupPolicy.entries.firstOrNull { it.name == value } ?: default
+        }
     }
 }
