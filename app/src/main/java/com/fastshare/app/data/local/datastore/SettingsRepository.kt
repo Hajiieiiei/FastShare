@@ -26,28 +26,18 @@ class SettingsRepository @Inject constructor(
             deviceId = prefs[KEY_DEVICE_ID] ?: "",
             autoDiscoveryEnabled = prefs[KEY_AUTO_DISCOVERY] ?: true,
             discoveryVisible = prefs[KEY_DISCOVERY_VISIBLE] ?: true,
-            interfacePreference = prefs[KEY_INTERFACE]?.let { raw: String ->
-                NetworkInterfacePreference.entries.firstOrNull { enum -> enum.name == raw }
-            } ?: NetworkInterfacePreference.AUTO,
+            interfacePreference = enumFromString(prefs[KEY_INTERFACE], NetworkInterfacePreference.AUTO),
             transferSpeedLimitKbps = prefs[KEY_SPEED_LIMIT] ?: 0,
             maxParallelStreams = prefs[KEY_PARALLEL_STREAMS] ?: 4,
             listenPort = prefs[KEY_LISTEN_PORT] ?: 0,
-            approvalPolicy = prefs[KEY_APPROVAL]?.let { raw ->
-                ApprovalPolicy.entries.firstOrNull { it.name == raw }
-            } ?: ApprovalPolicy.ALWAYS_ASK,
+            approvalPolicy = enumFromString(prefs[KEY_APPROVAL], ApprovalPolicy.ALWAYS_ASK),
             requireTls = prefs[KEY_REQUIRE_TLS] ?: true,
-            themeMode = prefs[KEY_THEME]?.let { raw ->
-                ThemeMode.entries.firstOrNull { it.name == raw }
-            } ?: ThemeMode.SYSTEM,
+            themeMode = enumFromString(prefs[KEY_THEME], ThemeMode.SYSTEM),
             dynamicColor = prefs[KEY_DYNAMIC_COLOR] ?: true,
-            language = prefs[KEY_LANGUAGE]?.let { raw ->
-                AppLanguage.entries.firstOrNull { it.tag == raw }
-            } ?: AppLanguage.SYSTEM,
+            language = prefs[KEY_LANGUAGE]?.let { raw -> AppLanguage.entries.firstOrNull { it.tag == raw } } ?: AppLanguage.SYSTEM,
             downloadTreeUri = prefs[KEY_DOWNLOAD_TREE],
             organizeBySender = prefs[KEY_ORGANIZE] ?: false,
-            autoCleanup = prefs[KEY_CLEANUP]?.let { raw ->
-                AutoCleanupPolicy.entries.firstOrNull { it.name == raw }
-            } ?: AutoCleanupPolicy.NEVER,
+            autoCleanup = enumFromString(prefs[KEY_CLEANUP], AutoCleanupPolicy.NEVER),
             keepScreenOnDuringTransfer = prefs[KEY_KEEP_SCREEN] ?: true,
             vibrateOnComplete = prefs[KEY_VIBRATE] ?: true,
             clipboardAutoApply = prefs[KEY_CLIPBOARD_AUTO] ?: false,
@@ -84,6 +74,8 @@ class SettingsRepository @Inject constructor(
     }
 
     companion object {
+        inline fun <reified T : Enum<T>> enumFromString(value: String?, default: T): T =
+            value?.let { v -> T::class.java.enumConstants?.firstOrNull { it.name == v } } ?: default
         private val KEY_DEVICE_NAME = stringPreferencesKey("device_name")
         private val KEY_DEVICE_ID = stringPreferencesKey("device_id")
         private val KEY_AUTO_DISCOVERY = booleanPreferencesKey("auto_discovery")
