@@ -1,6 +1,10 @@
 package com.fastshare.app.data.local.datastore
 
 import android.content.Context
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.fastshare.app.domain.model.AppLanguage
 import com.fastshare.app.domain.model.AppSettings
 import com.fastshare.app.domain.model.ApprovalPolicy
@@ -34,7 +38,7 @@ class SettingsRepository @Inject constructor(
             requireTls = prefs[KEY_REQUIRE_TLS] ?: true,
             themeMode = enumFromString(prefs[KEY_THEME], ThemeMode.SYSTEM),
             dynamicColor = prefs[KEY_DYNAMIC_COLOR] ?: true,
-            language = prefs[KEY_LANGUAGE]?.let { raw -> AppLanguage.entries.firstOrNull { it.tag == raw } } ?: AppLanguage.SYSTEM,
+            language = enumFromString(prefs[KEY_LANGUAGE], AppLanguage.SYSTEM) { it.tag },
             downloadTreeUri = prefs[KEY_DOWNLOAD_TREE],
             organizeBySender = prefs[KEY_ORGANIZE] ?: false,
             autoCleanup = enumFromString(prefs[KEY_CLEANUP], AutoCleanupPolicy.NEVER),
@@ -74,8 +78,6 @@ class SettingsRepository @Inject constructor(
     }
 
     companion object {
-        inline fun <reified T : Enum<T>> enumFromString(value: String?, default: T): T =
-            value?.let { v -> T::class.java.enumConstants?.firstOrNull { it.name == v } } ?: default
         private val KEY_DEVICE_NAME = stringPreferencesKey("device_name")
         private val KEY_DEVICE_ID = stringPreferencesKey("device_id")
         private val KEY_AUTO_DISCOVERY = booleanPreferencesKey("auto_discovery")
@@ -96,5 +98,8 @@ class SettingsRepository @Inject constructor(
         private val KEY_VIBRATE = booleanPreferencesKey("vibrate_on_complete")
         private val KEY_CLIPBOARD_AUTO = booleanPreferencesKey("clipboard_auto")
         private val KEY_ONBOARDED = booleanPreferencesKey("onboarded")
+
+        fun <T : Enum<T>> enumFromString(value: String?, default: T, matcher: (T) -> String = { it.name }): T =
+            value?.let { v -> T::class.java.enumConstants?.firstOrNull { matcher(it) == v } } ?: default
     }
 }
