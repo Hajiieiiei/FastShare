@@ -95,11 +95,7 @@ android {
         }
     }
 
-    androidResources { generateLocaleConfig = true }
 
-    bundle {
-        language { enableSplit = false }
-    }
 }
 
 ksp { arg("room.schemaLocation", "$projectDir/schemas") }
