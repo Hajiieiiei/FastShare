@@ -41,7 +41,7 @@ class TransferStorage @Inject constructor(
             when {
                 offset > 0 && partial.exists() -> RandomAccessFile(partial, "rw").use { raf ->
                     raf.seek(offset)
-                    written = copyTo(stream, raf.fd.outputStreamChecksum(), written, onProgress)
+                    written = copyTo(stream, raf.fd.outputStream() as java.io.OutputStream, written, onProgress)
                 }
                 else -> partial.outputStream().use { sink ->
                     written = copyTo(stream, sink, 0L, onProgress)

@@ -106,14 +106,14 @@ class CryptoEngine @Inject constructor() {
         val y = b.toByteArray()
         if (x.size != y.size) return false
         var diff = 0
-        for (i in x.indices) diff = diff or (x[i] xor y[i])
+        for (i in x.indices) diff = diff or ((x[i].toInt() and 0xFF) xor (y[i].toInt() and 0xFF))
         return diff == 0
     }
 
     /** RFC 5869 HKDF-SHA256. */
     private fun hkdf(ikm: ByteArray, salt: ByteArray, info: ByteArray, length: Int): ByteArray {
         val mac = javax.crypto.Mac.getInstance(HMAC_SHA256)
-        val saltBytes = salt.ifEmpty { ByteArray(32) }
+        val saltBytes = if (salt.isEmpty()) ByteArray(32) else salt
         mac.init(SecretKeySpec(saltBytes, HMAC_SHA256))
         val prk = mac.doFinal(ikm)
 
