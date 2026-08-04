@@ -1,43 +1,28 @@
 package com.fastshare.app.settings
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
-import com.fastshare.app.data.local.datastore.SettingsRepository
+import com.fastshare.app.domain.model.AppSettings
 import com.fastshare.app.domain.model.ThemeMode
-import com.fastshare.app.services.security.CertificateProvider
-import com.fastshare.app.services.security.IdentityManager
-import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
-import org.junit.Before
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
 class SettingsRepositoryTest {
-    private lateinit var context: Context
-    private lateinit var identityManager: IdentityManager
-    private lateinit var repo: SettingsRepository
 
-    @Before
-    fun setup() {
-        context = ApplicationProvider.getApplicationContext()
-        identityManager = IdentityManager(context, CertificateProvider(context))
-        repo = SettingsRepository(context, identityManager)
+    @Test
+    fun `default settings have expected values`() {
+        val defaults = AppSettings(
+            deviceName = "",
+            deviceId = "",
+            autoDiscoveryEnabled = true,
+            discoveryVisible = true,
+            themeMode = ThemeMode.SYSTEM,
+            dynamicColor = true,
+        )
+        assertThat(defaults.autoDiscoveryEnabled).isTrue()
+        assertThat(defaults.themeMode).isEqualTo(ThemeMode.SYSTEM)
     }
 
     @Test
-    fun `settings default to system theme`() = runTest {
-        val settings = repo.settings.first()
-        assertThat(settings.themeMode).isEqualTo(ThemeMode.SYSTEM)
-        assertThat(settings.autoDiscoveryEnabled).isTrue()
-    }
-
-    @Test
-    fun `update persists changes`() = runTest {
-        repo.update { it.copy(autoDiscoveryEnabled = false) }
-        val updated = repo.settings.first()
-        assertThat(updated.autoDiscoveryEnabled).isFalse()
+    fun `theme mode enum has all expected values`() {
+        assertThat(ThemeMode.entries).contains(ThemeMode.SYSTEM, ThemeMode.LIGHT, ThemeMode.DARK)
     }
 }

@@ -70,8 +70,8 @@ class ProtocolSerializationTest {
             usesTls = true,
         )
         val json = Protocol.json.encodeToString(DiscoveryPacket.serializer(), packet)
-        assertThat(json).contains(""n":"Pixel"")
-        assertThat(json).contains(""p":53319")
+        assertThat(json).contains("""n":"Pixel""")
+        assertThat(json).contains("""p":53319""")
     }
 
     @Test
