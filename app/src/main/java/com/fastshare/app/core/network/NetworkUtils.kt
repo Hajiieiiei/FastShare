@@ -78,7 +78,7 @@ object NetworkUtils {
         @Suppress("DEPRECATION")
         val wifiManager = context.applicationContext.getSystemService(WifiManager::class.java)
         @Suppress("DEPRECATION")
-        return wifiManager.connectionInfo?.ssid?.removeSurrounding("\\"")?.takeIf { it != "<unknown ssid>" }
+        return wifiManager.connectionInfo?.ssid?.removeSurrounding("\"")?.takeIf { it != "<unknown ssid>" }
     }
 
     fun isLocalTo(ip: InetAddress): Boolean {
