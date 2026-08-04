@@ -2,7 +2,8 @@ package com.fastshare.app.settings
 
 import com.fastshare.app.domain.model.AppSettings
 import com.fastshare.app.domain.model.ThemeMode
-import org.assertj.core.api.Assertions.assertThat
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SettingsRepositoryTest {
@@ -17,12 +18,15 @@ class SettingsRepositoryTest {
             themeMode = ThemeMode.SYSTEM,
             dynamicColor = true,
         )
-        assertThat(defaults.autoDiscoveryEnabled).isTrue()
-        assertThat(defaults.themeMode).isEqualTo(ThemeMode.SYSTEM)
+        assertTrue(defaults.autoDiscoveryEnabled)
+        assertEquals(ThemeMode.SYSTEM, defaults.themeMode)
     }
 
     @Test
     fun `theme mode enum has all expected values`() {
-        assertThat(ThemeMode.entries).contains(ThemeMode.SYSTEM, ThemeMode.LIGHT, ThemeMode.DARK)
+        assertEquals(3, ThemeMode.entries.size)
+        assertTrue(ThemeMode.entries.contains(ThemeMode.SYSTEM))
+        assertTrue(ThemeMode.entries.contains(ThemeMode.LIGHT))
+        assertTrue(ThemeMode.entries.contains(ThemeMode.DARK))
     }
 }
