@@ -66,7 +66,7 @@ class MulticastDiscoveryEngine @Inject constructor(
     private fun send(packet: DiscoveryPacket, type: DiscoveryPacket.PacketType) {
         val localIp = NetworkUtils.bestLocalIpv4() ?: return
         val iface = NetworkInterface.getByInetAddress(localIp) ?: return
-        DatagramSocket().use { socket ->
+        MulticastSocket().use { socket ->
             socket.reuseAddress = true
             socket.networkInterface = iface
             socket.broadcast = true
