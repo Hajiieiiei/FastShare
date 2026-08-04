@@ -5,8 +5,10 @@ import com.fastshare.app.services.transfer.TransferEngine
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import android.content.Context
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -14,7 +16,7 @@ object TransferModule {
     @Provides
     @Singleton
     fun provideTransferEngine(
-        context: android.content.Context,
+        @ApplicationContext context: Context,
         identityManager: com.fastshare.app.services.security.IdentityManager,
         cryptoEngine: com.fastshare.app.services.security.CryptoEngine,
         trustedDeviceDao: com.fastshare.app.data.local.dao.TrustedDeviceDao,

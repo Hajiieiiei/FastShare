@@ -1,10 +1,6 @@
 package com.fastshare.app.data.local.datastore
 
 import android.content.Context
-import androidx.datastore.preferences.core.booleanPreferencesKey
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import com.fastshare.app.domain.model.AppLanguage
 import com.fastshare.app.domain.model.AppSettings
 import com.fastshare.app.domain.model.ApprovalPolicy
@@ -12,6 +8,7 @@ import com.fastshare.app.domain.model.AutoCleanupPolicy
 import com.fastshare.app.domain.model.NetworkInterfacePreference
 import com.fastshare.app.domain.model.ThemeMode
 import com.fastshare.app.services.security.IdentityManager
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -20,7 +17,7 @@ import javax.inject.Singleton
 
 @Singleton
 class SettingsRepository @Inject constructor(
-    private val context: Context,
+    @ApplicationContext private val context: Context,
     private val identityManager: IdentityManager,
 ) {
     val settings: Flow<AppSettings> = context.settingsDataStore.data.map { prefs ->
