@@ -38,7 +38,7 @@ class SettingsRepository @Inject constructor(
             requireTls = prefs[KEY_REQUIRE_TLS] ?: true,
             themeMode = enumFromString(prefs[KEY_THEME], ThemeMode.SYSTEM),
             dynamicColor = prefs[KEY_DYNAMIC_COLOR] ?: true,
-            language = enumFromString(prefs[KEY_LANGUAGE], AppLanguage.SYSTEM) { it.tag },
+            language = enumFromStringLanguage(prefs[KEY_LANGUAGE]),
             downloadTreeUri = prefs[KEY_DOWNLOAD_TREE],
             organizeBySender = prefs[KEY_ORGANIZE] ?: false,
             autoCleanup = enumFromString(prefs[KEY_CLEANUP], AutoCleanupPolicy.NEVER),
@@ -99,6 +99,10 @@ class SettingsRepository @Inject constructor(
         private val KEY_CLIPBOARD_AUTO = booleanPreferencesKey("clipboard_auto")
         private val KEY_ONBOARDED = booleanPreferencesKey("onboarded")
 
+        fun enumFromStringLanguage(value: String?): AppLanguage {
+            if (value == null) return AppLanguage.SYSTEM
+            return AppLanguage.entries.firstOrNull { it.tag == value } ?: AppLanguage.SYSTEM
+        }
         fun enumFromString(value: String?, default: NetworkInterfacePreference): NetworkInterfacePreference {
             if (value == null) return default
             return NetworkInterfacePreference.entries.firstOrNull { it.name == value } ?: default
