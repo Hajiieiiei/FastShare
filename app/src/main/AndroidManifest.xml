@@ -73,10 +73,6 @@
             android:stopWithTask="false" />
 
         <provider
-            android:name="androidx.startup.Initia<!--Hilt init-->"
-            tools:node="merge" />
-
-        <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
             android:exported="false"
