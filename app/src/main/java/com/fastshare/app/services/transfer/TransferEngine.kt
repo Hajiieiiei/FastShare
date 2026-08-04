@@ -2,7 +2,6 @@ package com.fastshare.app.services.transfer
 
 import android.content.Context
 import android.util.Log
-import com.fastshare.app.core.util.FastShareError
 import com.fastshare.app.data.local.dao.TrustedDeviceDao
 import com.fastshare.app.data.network.protocol.CancelRequest
 import com.fastshare.app.data.network.protocol.HelloRequest
@@ -145,7 +144,7 @@ class TransferEngine @Inject constructor(
             resumeSupported = request.resumeSupported,
         )
         val negotiated = httpClient.requestTransfer(request.peerIp, request.peerPort, request.sessionId, transferRequest)
-        if (!negotiated.accepted) throw FastShareError.HandshakeRejected(negotiated.rejectReason ?: "Receiver declined")
+        if (!negotiated.accepted) throw RuntimeException("Handshake rejected: " + negotiated.rejectReason ?: "Receiver declined")
 
         updateState(request.sessionId, TransferState.IN_PROGRESS)
         val startTime = System.currentTimeMillis()
@@ -170,7 +169,7 @@ class TransferEngine @Inject constructor(
                                 updateProgress(request.sessionId, item, sent, item.size)
                             },
                         )
-                        if (!ok) throw FastShareError.TransferFailed(request.sessionId, "Upload failed for ${item.name}")
+                        if (!ok) throw RuntimeException("Transfer failed")
                     }
                 }
             }
@@ -184,7 +183,7 @@ class TransferEngine @Inject constructor(
             port = request.peerPort,
             request = VerifyRequest(request.sessionId, lastItem.id, lastItem.sha256 ?: "", lastItem.size),
         )
-        if (!verify.valid) throw FastShareError.ChecksumMismatch(lastItem.name)
+        if (!verify.valid) throw RuntimeException("Checksum mismatch: " + lastItem.name)
 
         markSession(request.sessionId, TransferState.COMPLETED)
     }
@@ -198,15 +197,15 @@ class TransferEngine @Inject constructor(
             deviceName = identityManager.deviceName(),
             platform = DevicePlatform.ANDROID,
             deviceType = DeviceType.PHONE,
-            appVersion = BuildConfig.VERSION_NAME,
+            appVersion = com.fastshare.app.BuildConfig.VERSION_NAME,
             publicKey = cryptoEngine.encodePublicKey(localKeyPair),
             fingerprint = identityManager.fingerprint(),
             capabilities = Capability.DEFAULTS.map { it.wire },
             nonce = localNonce,
         )
         val response: HelloResponse = httpClient.hello(request.peerIp, request.peerPort, hello)
-            ?: throw FastShareError.HandshakeFailed("No hello response")
-        if (!response.accepted) throw FastShareError.HandshakeRejected(response.rejectReason ?: "Rejected")
+            ?: throw RuntimeException("No hello response")
+        if (!response.accepted) throw RuntimeException("Handshake rejected: " + response.rejectReason ?: "Rejected")
         return cryptoEngine.deriveSessionKey(
             localKeyPair = localKeyPair,
             remotePublicKeyEncoded = response.publicKey ?: "",

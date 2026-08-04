@@ -56,7 +56,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class InboundTransferServer @Inject constructor(
-    private val context: Context,
+    private val appContext: Context,
     private val identityManager: IdentityManager,
     private val cryptoEngine: CryptoEngine,
     private val tlsFactory: TlsFactory,
@@ -197,7 +197,7 @@ class InboundTransferServer @Inject constructor(
                         return@post
                     }
                     val sanitized = item.name.replace(Regex("[\\\\/:*?\"<>|]"), "_")
-                    val targetFile = File(context.filesDir, "incoming/$sanitized")
+                    val targetFile = File(appContext.filesDir, "incoming/$sanitized")
                     targetFile.parentFile?.mkdirs()
                     val channel = call.request.receiveChannel() as? ByteReadChannel
                     if (channel == null) {
@@ -223,7 +223,7 @@ class InboundTransferServer @Inject constructor(
                         call.respond(HttpStatusCode.NotFound, mapOf("error" to "unknown session"))
                         return@post
                     }
-                    val file = File(context.filesDir, "incoming/${request.itemId}")
+                    val file = File(appContext.filesDir, "incoming/${request.itemId}")
                     val valid = file.exists() && file.length() == request.size
                     call.respond(
                         VerifyResponse(
@@ -252,7 +252,7 @@ class InboundTransferServer @Inject constructor(
                 webSocket(Protocol.PATH_EVENTS) {
                     while (true) {
                         delay(10_000)
-                        send("""{"t":"heartbeat","ts":${"$"}{System.currentTimeMillis()}}""")
+                        send(io.ktor.websocket.Frame.Text("""{"t":"heartbeat","ts":${"$"}{System.currentTimeMillis()}}"""))
                     }
                 }
             }
