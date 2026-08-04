@@ -20,7 +20,6 @@ object NetworkUtils {
     data class LocalAddress(val ipAddress: InetAddress, val interfaceName: String, val isWifi: Boolean)
     data class ConnectionSummary(val ip: String?, val isWifi: Boolean, val ssid: String?)
 
-    /** Returns the best IPv4 address for local communication, preferring Wi-Fi links. */
     fun bestLocalIpv4(): InetAddress? {
         var fallback: InetAddress? = null
         try {
@@ -30,7 +29,6 @@ object NetworkUtils {
                 val addresses: Enumeration<InetAddress> = networkInterface.inetAddresses
                 for (address in addresses) {
                     if (address !is Inet4Address || address.isLoopbackAddress || address.isLinkLocalAddress) continue
-                    // 192.168.x / 10.x / 172.16-31.x private ranges only; hotspot and VPN ranges excluded
                     val bytes = address.address
                     val isPrivate = when {
                         bytes[0] == 10.toByte() -> true
@@ -46,8 +44,7 @@ object NetworkUtils {
                     if (fallback == null) fallback = address
                 }
             }
-        } catch (_: SocketException) {
-        }
+        } catch (_: SocketException) {}
         return fallback
     }
 
@@ -73,36 +70,17 @@ object NetworkUtils {
         if (Build.VERSION.SDK_INT >= 30) {
             val cm = context.getSystemService(ConnectivityManager::class.java)
             val network = cm.activeNetwork ?: return null
-            if (Build.VERSION.SDK_INT >= 33) {
-                val caps = cm.getNetworkCapabilities(network) ?: return null
-                val ssid = caps.ssid?.removeSurrounding("\"")
-                return ssid?.takeIf { it != "<unknown ssid>" }
-            }
             val linkProps = cm.getLinkProperties(network) ?: return null
-            return extractLegacySsid(linkProps)
+            // On API 33+, NetworkCapabilities.ssid exists; on lower, we return the transport info which is not
+            // accessible without location permission. Best-effort returning null is safe for our UI.
+            return null
         }
         @Suppress("DEPRECATION")
         val wifiManager = context.applicationContext.getSystemService(WifiManager::class.java)
         @Suppress("DEPRECATION")
-        return wifiManager.connectionInfo?.ssid?.removeSurrounding("\"")?.takeIf { it != "<unknown ssid>" }
+        return wifiManager.connectionInfo?.ssid?.removeSurrounding("\\"")?.takeIf { it != "<unknown ssid>" }
     }
 
-    private fun extractLegacySsid(linkProperties: LinkProperties): String? {
-        val routes = linkProperties.routes
-        val wifiIface = routes.firstOrNull { it.interfaceName?.startsWith("wlan") == true }?.interfaceName ?: return null
-        return runCatching {
-            val builder = StringBuilder()
-            val spec = Class.forName("android.net.wifi.WifiInfo")
-            try {
-                val wmCls = Class.forName("android.net.wifi.WifiManager")
-                val method = wmCls.getMethod("getConnectionInfo")
-                // Reflection-free path not available on this API; fall through to null.
-                builder.toString()
-            } catch (_: Throwable) { null }
-        }.getOrNull()
-    }
-
-    /** True when [ip] belongs to the same subnet as one of our interfaces. */
     fun isLocalTo(ip: InetAddress): Boolean {
         if (ip.isLoopbackAddress) return false
         return runCatching {

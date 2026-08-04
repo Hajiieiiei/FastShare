@@ -76,7 +76,7 @@ class SettingsRepository @Inject constructor(
             prefs[KEY_THEME] = updated.themeMode.name
             prefs[KEY_DYNAMIC_COLOR] = updated.dynamicColor
             prefs[KEY_LANGUAGE] = updated.language.tag
-            prefs[KEY_DOWNLOAD_TREE] = updated.downloadTreeUri
+            updated.downloadTreeUri?.let { prefs[KEY_DOWNLOAD_TREE] = it } ?: prefs.remove(KEY_DOWNLOAD_TREE)
             prefs[KEY_ORGANIZE] = updated.organizeBySender
             prefs[KEY_CLEANUP] = updated.autoCleanup.name
             prefs[KEY_KEEP_SCREEN] = updated.keepScreenOnDuringTransfer

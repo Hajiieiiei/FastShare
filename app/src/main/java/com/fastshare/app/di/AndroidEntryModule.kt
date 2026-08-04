@@ -1,5 +1,6 @@
 package com.fastshare.app.di
 
+import android.content.Context
 import com.fastshare.app.services.transfer.InboundTransferServer
 import com.fastshare.app.services.transfer.TransferStorage
 import dagger.Module
@@ -15,7 +16,7 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideInboundServer(
-        @ApplicationContext context: android.content.Context,
+        @ApplicationContext context: Context,
         identityManager: com.fastshare.app.services.security.IdentityManager,
         cryptoEngine: com.fastshare.app.services.security.CryptoEngine,
         tlsFactory: com.fastshare.app.services.security.TlsFactory,
@@ -26,28 +27,30 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideTransferStorage(@ApplicationContext context: android.content.Context) =
+    fun provideTransferStorage(@ApplicationContext context: Context) =
         TransferStorage(context)
 
     @Provides
     @Singleton
-    fun provideHttpClient(crypto: com.fastshare.app.services.security.CryptoEngine) =
-        com.fastshare.app.services.transfer.TransferHttpClient(crypto)
+    fun provideHttpClient(
+        crypto: com.fastshare.app.services.security.CryptoEngine,
+        @ApplicationContext context: Context,
+    ) = com.fastshare.app.services.transfer.TransferHttpClient(crypto, context)
 
     @Provides
     @Singleton
-    fun provideNsdEngine(@ApplicationContext context: android.content.Context) =
+    fun provideNsdEngine(@ApplicationContext context: Context) =
         com.fastshare.app.data.network.discovery.NsdDiscoveryEngine(context)
 
     @Provides
     @Singleton
-    fun provideMulticastEngine(@ApplicationContext context: android.content.Context) =
+    fun provideMulticastEngine(@ApplicationContext context: Context) =
         com.fastshare.app.data.network.discovery.MulticastDiscoveryEngine(context)
 
     @Provides
     @Singleton
     fun provideDiscoveryCoordinator(
-        @ApplicationContext context: android.content.Context,
+        @ApplicationContext context: Context,
         nsd: com.fastshare.app.data.network.discovery.NsdDiscoveryEngine,
         multicast: com.fastshare.app.data.network.discovery.MulticastDiscoveryEngine,
         repo: com.fastshare.app.data.network.discovery.DeviceRepository,

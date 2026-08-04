@@ -22,17 +22,10 @@ import java.net.DatagramSocket
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.MulticastSocket
+import java.net.NetworkInterface
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * UDP multicast presence beacon on 224.0.0.171:53320. Supplements mDNS:
- * Android-to-Android discovery is instant (no 5s Nsd resolve), and peers are announced
- * with the full capability set so the UI can show transfer options before first contact.
- *
- * Battery: announce every 10s while visible; query on demand. All sockets are kept on the
- * Wi-Fi interface via NetworkInterface by-name lookup so a VPN/loopback never leaks packets.
- */
 @Singleton
 class MulticastDiscoveryEngine @Inject constructor(
     private val context: Context,
@@ -43,7 +36,6 @@ class MulticastDiscoveryEngine @Inject constructor(
     @Volatile private var announceJob: Job? = null
     @Volatile private var lastPacket: DiscoveryPacket? = null
 
-    /** Starts a 10s interval announce loop; replacing the prior packet each tick. */
     fun startAnnouncing(buildPacket: () -> DiscoveryPacket) {
         if (announceJob?.isActive == true) return
         announceJob = scope.launch {
@@ -64,7 +56,6 @@ class MulticastDiscoveryEngine @Inject constructor(
     fun sendQuery() {
         val packet = lastPacket ?: return
         runCatching { send(packet, DiscoveryPacket.PacketType.QUERY) }
-            .onFailure { Log.w(tag, "query failed", it) }
     }
 
     fun sendBye() {
@@ -74,7 +65,7 @@ class MulticastDiscoveryEngine @Inject constructor(
 
     private fun send(packet: DiscoveryPacket, type: DiscoveryPacket.PacketType) {
         val localIp = NetworkUtils.bestLocalIpv4() ?: return
-        val iface = runCatching { java.net.NetworkInterface.getByInetAddress(localIp) }.getOrNull() ?: return
+        val iface = NetworkInterface.getByInetAddress(localIp) ?: return
         DatagramSocket().use { socket ->
             socket.reuseAddress = true
             socket.networkInterface = iface
@@ -92,14 +83,13 @@ class MulticastDiscoveryEngine @Inject constructor(
         }
     }
 
-    /** Continuous listening loop; emits every valid packet received paired with the sender IP. */
     fun listen(): Flow<Pair<DiscoveryPacket, String>> = callbackFlow {
         val localIp = NetworkUtils.bestLocalIpv4() ?: run { close(); return@callbackFlow }
-        val iface = runCatching { java.net.NetworkInterface.getByInetAddress(localIp) }.getOrNull() ?: run { close(); return@callbackFlow }
+        val iface = NetworkInterface.getByInetAddress(localIp) ?: run { close(); return@callbackFlow }
         val socket = MulticastSocket(MULTICAST_PORT).apply {
             reuseAddress = true
             soTimeout = LISTEN_TIMEOUT_MS
-            networkInterface = iface
+            this.networkInterface = iface
             joinGroup(InetSocketAddress(InetAddress.getByName(MULTICAST_GROUP), MULTICAST_PORT), iface)
         }
         val buffer = ByteArray(MAX_PACKET_SIZE)
@@ -108,7 +98,6 @@ class MulticastDiscoveryEngine @Inject constructor(
                 try {
                     val datagram = DatagramPacket(buffer, buffer.size)
                     socket.receive(datagram)
-                    // Ignore packets we sent ourselves.
                     if (datagram.address.hostAddress == localIp.hostAddress) continue
                     runCatching {
                         val decoded = Protocol.json.decodeFromString(
@@ -118,7 +107,6 @@ class MulticastDiscoveryEngine @Inject constructor(
                         trySend(decoded to datagram.address.hostAddress)
                     }.onFailure { Log.w(tag, "bad packet: ${it.message}") }
                 } catch (_: java.net.SocketTimeoutException) {
-                    // Normal; keeps the receive loop responsive to cancellation.
                 }
             }
         }
