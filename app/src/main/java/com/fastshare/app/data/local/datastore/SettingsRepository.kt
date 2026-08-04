@@ -26,8 +26,8 @@ class SettingsRepository @Inject constructor(
             deviceId = prefs[KEY_DEVICE_ID] ?: "",
             autoDiscoveryEnabled = prefs[KEY_AUTO_DISCOVERY] ?: true,
             discoveryVisible = prefs[KEY_DISCOVERY_VISIBLE] ?: true,
-            interfacePreference = prefs[KEY_INTERFACE]?.let { raw ->
-                NetworkInterfacePreference.entries.firstOrNull { it.name == raw }
+            interfacePreference = prefs[KEY_INTERFACE]?.let { raw: String ->
+                NetworkInterfacePreference.entries.firstOrNull { it.name == raw } ?: NetworkInterfacePreference.AUTO
             } ?: NetworkInterfacePreference.AUTO,
             transferSpeedLimitKbps = prefs[KEY_SPEED_LIMIT] ?: 0,
             maxParallelStreams = prefs[KEY_PARALLEL_STREAMS] ?: 4,
